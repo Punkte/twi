@@ -1,0 +1,52 @@
+version: "3.7"
+services:
+  mongo:
+    container_name: mongodb
+    image: mongo
+    networks:
+      - database
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpwd
+      MONGO_INITDB_DATABASE: "twidb"
+      MONGODB_USER: "twiuser"
+      MONGODB_DATABASE: "twidb"
+  mongo-express:
+    container_name: mongo-express
+    image: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: adminpwd
+      ME_CONFIG_OPTIONS_EDITORTHEME: ambiance
+    ports:
+      - "8082:8081"
+    networks:
+      - database
+    depends_on:
+      - mongo
+  back:
+    build: ./
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - "1234:3001"
+    volumes:
+      - ./:/app
+      - /usr/src/app/node_modules
+    environment:
+      APP_PORT: 3001
+      DATABASE_HOST: mongodb
+      DATABASE_PORT: 27017
+      DATABASE_NAME: twidb
+      MONGO_ROOT_USERNAME: admin
+      MONGO_ROOT_PASSWORD: adminpwd
+      JWTSECRET: 1212
+    networks:
+      - database
+
+networks:
+  database:
